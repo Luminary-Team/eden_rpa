@@ -16,13 +16,13 @@ def transfer_data(table_mapping, conn_params_extracao, conn_params_insercao):
     conn_insercao = connect_to_db(conn_params_insercao)
 
     try:
-        print("Iniciando a transferência de dados...")
+        # print("Iniciando a transferência de dados...")
         for table_origem, table_destino in table_mapping.items():
             with conn_extracao.cursor() as cursor_extracao, conn_insercao.cursor() as cursor_insercao:
                 # Extraindo os dados da tabela de origem
                 cursor_extracao.execute(f"SELECT * FROM {table_origem}")
                 rows = cursor_extracao.fetchall()
-                print(f"Transferindo dados de '{table_origem}' para '{table_destino}'...")
+                # print(f"Transferindo dados de '{table_origem}' para '{table_destino}'...")
 
                 if table_origem == "boost_plan" and table_destino == "boost_plan":
                     for row in rows:
@@ -34,10 +34,9 @@ def transfer_data(table_mapping, conn_params_extracao, conn_params_insercao):
                                 INSERT INTO boost_plan (id_plan, name, description, price, duration_days)
                                 VALUES (%s, %s, %s, %s, %s)
                                 """, (row[0], row[1], row[2], row[3], row[4]))
-                            print(f"Registro {row[0]} transferido com sucesso.")
+                            # print(f"Registro {row[0]} transferido com sucesso.")
 
         conn_insercao.commit()
-        print("Transferência concluída com sucesso.")
 
     except Exception as e:
         print(f"Erro durante a transferência de dados: {e}")
@@ -45,7 +44,7 @@ def transfer_data(table_mapping, conn_params_extracao, conn_params_insercao):
     finally:
         conn_extracao.close()
         conn_insercao.close()
-        print("Conexões encerradas.")
+        # print("Conexões encerradas.")
 
 # Parâmetros de conexão (origem e destino invertidos)
 conn_params_extracao = {
