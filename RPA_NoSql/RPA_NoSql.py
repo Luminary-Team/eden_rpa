@@ -31,6 +31,7 @@ try:
 except Exception as e:
     print("Erro ao conectar ao MongoDB:", e)
 
+# Função para transferir posts do fórum
 def transfer_forum():
     try:
         sql_cursor.execute("SELECT id_post, user_id, content, post_date, code_repr FROM forum_post")
@@ -45,12 +46,12 @@ def transfer_forum():
                         "user_id": user_id,
                         "content": content,
                         "post_date": post_date.isoformat(),
-                        "comments": []
+                        "comments": [],
+                        "engager": []
                     }
                     forum_collection.insert_one(forum_document)
                     print("Post inserido:", forum_document)
                 else:
-                    # Verificar se o comentário já existe na lista de comentários
                     existing_comment = forum_collection.find_one(
                         {"post_id": code_repr, "comments": {"$elemMatch": {"post_id": id_post, "user_id": user_id}}}
                     )
@@ -69,6 +70,7 @@ def transfer_forum():
     except Exception as e:
         print("Erro ao transferir posts:", e)
 
+# Função para transferir artigos de notícias
 def transfer_news():
     try:
         sql_cursor.execute("SELECT id_article, headline, news_url, source FROM informative_articles")
@@ -76,22 +78,50 @@ def transfer_news():
 
         for article in articles:
             id_article, headline, news_url, source = article
-            if not news_collection.find_one({"post_id": id_article}):
+            if not news_collection.find_one({"article_id": id_article}):
                 news_document = {
-                    "post_id": id_article,
+                    "article_id": id_article,
                     "url": news_url,
                     "title": headline,
                     "description": source,
-                    "date": datetime.now().isoformat()
+                    "date": datetime.now().isoformat(),
+                    "engager": []
                 }
                 news_collection.insert_one(news_document)
                 print("Artigo inserido:", news_document)
     except Exception as e:
         print("Erro ao transferir artigos:", e)
 
+# Função para transferir curtidas dos usuários
+def transfer_engagements():
+    try:
+        sql_cursor.execute("SELECT user_id, forum_post_id, article_id FROM pinned")
+        pinned_entries = sql_cursor.fetchall()
+
+        for entry in pinned_entries:
+            user_id, forum_post_id, article_id = entry
+
+            if forum_post_id:
+                forum_collection.update_one(
+                    {"post_id": forum_post_id},
+                    {"$addToSet": {"engager": user_id}}
+                )
+                print(f"Engagement adicionado ao post do fórum {forum_post_id}: usuário {user_id}")
+
+            if article_id:
+                news_collection.update_one(
+                    {"article_id": article_id},
+                    {"$addToSet": {"engager": user_id}}
+                )
+                print(f"Engagement adicionado ao artigo {article_id}: usuário {user_id}")
+
+    except Exception as e:
+        print("Erro ao transferir curtidas:", e)
+
 # Executando as funções de transferência
 transfer_forum()
 transfer_news()
+transfer_engagements()
 
 # Fechando as conexões
 sql_cursor.close()
