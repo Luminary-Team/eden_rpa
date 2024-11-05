@@ -4,6 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+# Carregando .ENV
 load_dotenv()
 
 # Parâmetros de conexão com o banco SQL
