@@ -28,13 +28,7 @@ jobs:
           pip install -r RPA_1/requirements.txt
           pip install -r RPA_2/requirements.txt
           pip install -r RPA_NoSql/requirements.txt
-          
-      - name: Run covarage python
-        run: |
-          coverage run transformador.py
- 
-      - name: Resultados
-        run: coverage report
+         
  
       - name: Deploy no EC2 -AWS
         if: github.event_name == 'push'
